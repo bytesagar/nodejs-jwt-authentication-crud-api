@@ -1,0 +1,24 @@
+{
+  "name": "learn-rest-api",
+  "version": "1.0.0",
+  "description": "API for learning purpose",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "NODEJS",
+    "REST_API",
+    "mongodb"
+  ],
+  "author": "sagar karki",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "express": "^4.17.1",
+    "express-validator": "^6.5.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.18"
+  }
+}
