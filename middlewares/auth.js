@@ -1,14 +1,17 @@
-const { verifyToken } = require("../utils/jwt")
+const { verifyToken } = require('../utils/jwt')
+const CustomError = require('../models/CustomError')
 
 module.exports = async (req, res, next) => {
-    const token = req.header('auth-token')
-    if (!token) return res.status(400).send({ message: "Please provide token to view the resource" })
+  const token = req.header('auth-token')
+  if (!token) return next(new CustomError('Invalid token', 400))
 
-    try {
-        const verified = await verifyToken(token, process.env.JWT_SECRET || 'secretkey')
-    } catch (err) {
-        res.status(400).send({ message: err.message })
-    }
+  try {
+    const verified = verifyToken(token)
+
+    // TODO: req.userId = ...
+
     next()
-
+  } catch (err) {
+    return new CustomError('Invalid token', 500)
+  }
 }

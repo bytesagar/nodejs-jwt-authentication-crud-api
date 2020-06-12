@@ -1,77 +1,74 @@
-const User = require("../models/userModel")
+const User = require('../models/userModel')
 
-const bcrypt = require("bcrypt")
-const { check, validationResult } = require("express-validator")
-const { createToken, verifyToken } = require("../utils/jwt")
+const bcrypt = require('bcrypt')
+const { validationResult } = require('express-validator')
+const { createToken } = require('../utils/jwt')
+const CustomError = require('../models/CustomError')
 
-const signUp = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty) {
-        return res.status(400).json({
-            errors: errors.array()
-        })
-    }
+const signUp = async (req, res, next) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array(),
+    })
+  }
 
-    const { username, email, password } = req.body
-    try {
-        let user = await User.findOne({ email: email })
-        if (user) return res.status(400).json({ msg: "User already exists" })
-        user = new User({
-            username,
-            email,
-            password
-        })
+  const { username, email, password } = req.body
+  try {
+    let user = await User.findOne({ email: email })
+    if (user) return next(new CustomError('User already exists', 400))
+    user = new User({
+      username,
+      email,
+      password,
+    })
 
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
 
-        user.password = hashedPassword
+    user.password = hashedPassword
 
-        await user.save()
+    await user.save()
 
-        res.status(201).json({ success: true, payload: user })
-
-    } catch (err) {
-        console.log(err)
-        res.status(400).json({ msg: err })
-    }
-
-}
-const login = async (req, res) => {
-    const errors = validationResult(req)
-    if ((!errors.isEmpty())) {
-        return res.status(400).json({
-            errors: errors.array()
-        })
-    }
-    const { email, password } = req.body;
-    try {
-        let user = await User.findOne({ email })
-
-        if (!user) res.status(400).json({
-            message: "User does not exist"
-        })
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-            const accessToken = await createToken({
-                id: user._id,
-                isAdmin: user.isAdmin
-            }, process.env.JWT_SECRET || "secretkey")
-
-            res.header('auth-token', accessToken).send({ status: 'success', accessToken, payload: user })
-        } else {
-            throw new Error("Email or password doesn't match")
-        }
-
-    } catch (err) {
-        console.log(err)
-        res.status(400).json({
-            message: "Something went wrong"
-        })
-    }
+    res.status(201).json({ success: true, user })
+  } catch (err) {
+    next(new CustomError('Something went wrong', 500))
+  }
 }
 
+const login = async (req, res, next) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array(),
+    })
+  }
+  const { email, password } = req.body
+  try {
+    let user = await User.findOne({ email })
 
+    if (!user) return next(new CustomError('Invalid credentials', 400))
+
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (isMatch) {
+      const accessToken = createToken({
+        id: user._id,
+        isAdmin: user.isAdmin,
+      })
+
+      res
+        .header('auth-token', accessToken)
+        .send({ success: true, accessToken, user })
+    } else {
+      return next(new CustomError(`Invalid credentials`, 400))
+    }
+  } catch (err) {
+    console.log(err)
+    next(new CustomError('Something went wrong', 500))
+  }
+}
 
 module.exports = { signUp, login }

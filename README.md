@@ -6,16 +6,13 @@
 
 ### How To Setup
 
-'''
-
-- git clone https://github.com/sagar608/nodejs-crud-api.git
-- cd nodejs-crud-api
-- npm install
+- `git clone https://github.com/sagar608/nodejs-crud-api.git`
+- `cd nodejs-crud-api`
+- `npm install`
 - configure .env file
-- npm start || npm run dev
-  > The project will start locally at localhost:3000
+- `npm start` || `npm run dev`
 
-'''
+> The project will start locally at localhost:3000
 
 # API Endpoints
 
