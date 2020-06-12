@@ -1,20 +1,13 @@
-const jwt = require("jsonwebtoken")
-const Token = require("../models/tokenModel")
+const jwt = require('jsonwebtoken')
 
-const createToken = async (payload, secret) => {
-    const tok = jwt.sign(payload, secret)
-    return tok
+const jwtSecret = process.env.JWT_SECRET || 'secretkey'
+
+const createToken = payload => {
+  return jwt.sign(payload, jwtSecret)
 }
 
-const verifyToken = async (token, secret) => {
-    try {
-
-        const decoded = jwt.verify(token, secret);
-        return decoded
-    } catch (err) {
-
-        throw new Error(err)
-    }
+const verifyToken = token => {
+  return jwt.verify(token, jwtSecret)
 }
 
 module.exports = { createToken, verifyToken }

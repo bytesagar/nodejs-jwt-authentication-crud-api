@@ -1,72 +1,75 @@
-const Tutorial = require("../models/tutorial")
+const Tutorial = require('../models/tutorial')
+const CustomError = require('../models/CustomError')
 
-exports.createTutorial = async (req, res) => {
-    if (!req.body) {
-        return res.status(400).send({ message: "No place can be empty" })
-    }
-    try {
-        const tutorial = new Tutorial({
-            title: req.body.title,
-            body: req.body.body
-        })
+exports.createTutorial = async (req, res, next) => {
+  if (!req.body) {
+    return next(new CustomError('Body cannot be empty', 400))
+  }
+  try {
+    const tutorial = new Tutorial({
+      title: req.body.title,
+      body: req.body.body,
+    })
 
-        const tut = await tutorial.save()
-        return res.status(200).send(tut)
+    // TODO: Connect tutorial with user
 
-    } catch (err) {
-        console.log(err)
-        return res.status(400).send(err)
-    }
+    const tut = await tutorial.save()
+    return res.status(201).send({ success: true, tutorial: tut })
+  } catch (err) {
+    console.log(err)
+    next(new CustomError('Something went wrong', 500))
+  }
 }
 
-exports.findAll = async (req, res) => {
-    try {
-        const tut = await Tutorial.find()
+exports.findAll = async (req, res, next) => {
+  try {
+    const tut = await Tutorial.find()
 
-        return res.status(200).send(tut)
-    } catch (err) {
-        console.log(err)
-        res.status(400).send(err)
-    }
-
+    return res.status(200).send({ success: true, tutorial: tut })
+  } catch (err) {
+    console.log(err)
+    next(new CustomError('Something went wrong', 500))
+  }
 }
 
-exports.findOne = async (req, res) => {
-    try {
-        const tut = await Tutorial.findById(req.params.id)
+exports.findOne = async (req, res, next) => {
+  try {
+    const tut = await Tutorial.findById(req.params.id)
 
-        if (!tut) {
-            throw new Error("Tutorial not found")
-        }
-        res.send({ status: "success", payload: tut })
-    } catch (err) {
-        res.status(400).send(err)
+    if (!tut) {
+      return next(new CustomError('Tutorial not found', 400))
     }
+    res.send({ success: true, tutorial: tut })
+  } catch (err) {
+    next(new CustomError('Something went wrong', 500))
+  }
 }
 
-exports.update = async (req, res) => {
-    try {
-        const editTutorial = await Tutorial.findOneAndUpdate({ _id: req.params.id }, req.body)
+exports.update = async (req, res, next) => {
+  try {
+    const editTutorial = await Tutorial.findOneAndUpdate(
+      { _id: req.params.id },
+      req.body
+    )
 
-        if (!editTutorial) {
-            throw new Error("Tutorial not found")
-        }
-        const updatedTutorial = await Tutorial.findById(req.params.id)
-        return res.status(200).send({ status: "Success", payload: updatedTutorial })
-    } catch (err) {
-        return res.status(400).send(err)
+    if (!editTutorial) {
+      return next(new CustomError('Tutorial not found', 400))
     }
+    const updatedTutorial = await Tutorial.findById(req.params.id)
+    return res.status(200).send({ success: true, tutorial: updatedTutorial })
+  } catch (err) {
+    next(new CustomError('Something went wrong', 500))
+  }
 }
 
-exports.delete = async (req, res) => {
-    try {
-        const tut = await Tutorial.findOneAndDelete({ _id: req.params.id })
-        if (!tut) {
-            return res.status(400).send("No tutorial found")
-        }
-        return res.status(200).send({ status: "Success", payload: tut, message: "Deleted" })
-    } catch (err) {
-        return res.status(400).send({ status: "Failed" })
+exports.delete = async (req, res, next) => {
+  try {
+    const tut = await Tutorial.findOneAndDelete({ _id: req.params.id })
+    if (!tut) {
+      return next(new CustomError('Tutorial not found', 400))
     }
+    return res.send({ success: true, tutorial: tut })
+  } catch (err) {
+    next(new CustomError('Something went wrong', 500))
+  }
 }
-
