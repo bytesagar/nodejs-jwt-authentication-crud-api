@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
 const { createToken } = require('../utils/jwt')
 const CustomError = require('../models/CustomError')
+const { json } = require('express')
 
 const signUp = async (req, res, next) => {
   const errors = validationResult(req)
@@ -29,6 +30,7 @@ const signUp = async (req, res, next) => {
 
     user.password = hashedPassword
 
+
     await user.save()
 
     res.status(201).json({ success: true, user })
@@ -53,18 +55,18 @@ const login = async (req, res, next) => {
 
     const isMatch = await bcrypt.compare(password, user.password)
 
-    if (isMatch) {
-      const accessToken = createToken({
-        id: user._id,
-        isAdmin: user.isAdmin,
-      })
-
-      res
-        .header('auth-token', accessToken)
-        .send({ success: true, accessToken, user })
-    } else {
+    if (!isMatch) {
       return next(new CustomError(`Invalid credentials`, 400))
     }
+
+    const accessToken = createToken({
+      id: user._id
+    })
+    user.isLoggedIn = true
+    await user.save()
+    res
+      .header('authorization', accessToken)
+      .send({ success: true, accessToken, user })
   } catch (err) {
     console.log(err)
     next(new CustomError('Something went wrong', 500))

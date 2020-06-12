@@ -16,7 +16,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  isAdmin: { type: Boolean, default: false, required: false },
+  isLoggedIn: {
+    type: Boolean,
+    default: false
+  },
+  token: {
+    type: String,
+
+  },
+  tutorials: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tutorial'
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now(),

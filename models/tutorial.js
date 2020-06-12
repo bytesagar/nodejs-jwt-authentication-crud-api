@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 
-// TODO: Relate tutorial with user
 
 const tutorialSchema = new mongoose.Schema({
   title: {
@@ -10,6 +9,10 @@ const tutorialSchema = new mongoose.Schema({
   body: {
     type: String,
     required: true,
+  },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   published: {
     type: Date,
