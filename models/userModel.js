@@ -1,11 +1,16 @@
 const mongoose = require('mongoose')
 
-// TODO: Array of tutorials created by user
+// FIXME: Don't store the loggedIn status and token of user in database (if you want restful api).
+
+// TODO: Add user's fullName
+
+// username is made unique (should be unique)
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
+    unique: true,
   },
   email: {
     type: String,
@@ -18,21 +23,20 @@ const userSchema = new mongoose.Schema({
   },
   isLoggedIn: {
     type: Boolean,
-    default: false
+    default: false,
   },
   token: {
     type: String,
-
   },
   tutorials: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Tutorial'
-    }
+      ref: 'Tutorial',
+    },
   ],
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
 })
 
