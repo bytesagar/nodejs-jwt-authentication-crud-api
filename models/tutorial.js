@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 
-
 const tutorialSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -12,11 +11,11 @@ const tutorialSchema = new mongoose.Schema({
   },
   creator: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
   published: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
 })
 

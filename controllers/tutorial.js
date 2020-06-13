@@ -1,7 +1,6 @@
 const Tutorial = require('../models/tutorial')
-const User = require("../models/userModel")
+const User = require('../models/userModel')
 const CustomError = require('../models/CustomError')
-
 
 exports.createTutorial = async (req, res, next) => {
   if (!req.body) {
@@ -11,19 +10,17 @@ exports.createTutorial = async (req, res, next) => {
     const tutorial = await Tutorial.create({
       title: req.body.title,
       body: req.body.body,
-      creator: req.uid
+      creator: req.uid,
     })
 
     //connected tutorials with the user
     const user = await User.findById(req.uid)
 
     if (user) {
-
       const tutorials = [...user.tutorials, tutorial.id]
       await user.updateOne({ tutorials })
 
-      return res.status(201).send({ success: true, tutorial: tutorials })
-
+      return res.status(201).send({ success: true, tutorial })
     }
   } catch (err) {
     console.log(err)
@@ -47,7 +44,7 @@ exports.findOne = async (req, res, next) => {
     const tut = await Tutorial.findById(req.params.id)
 
     if (!tut) {
-      return next(new CustomError('Tutorial not found', 400))
+      return next(new CustomError('Tutorial not found', 404))
     }
     res.send({ success: true, tutorial: tut })
   } catch (err) {
@@ -59,14 +56,15 @@ exports.update = async (req, res, next) => {
   try {
     const editTutorial = await Tutorial.findOneAndUpdate(
       { _id: req.params.id },
-      req.body
+      req.body,
+      { new: true }
     )
 
     if (!editTutorial) {
-      return next(new CustomError('Tutorial not found', 400))
+      return next(new CustomError('Tutorial not found', 404))
     }
-    const updatedTutorial = await Tutorial.findById(req.params.id)
-    return res.status(200).send({ success: true, tutorial: updatedTutorial })
+
+    return res.status(200).send({ success: true, tutorial: editTutorial })
   } catch (err) {
     next(new CustomError('Something went wrong', 500))
   }
@@ -76,13 +74,11 @@ exports.delete = async (req, res, next) => {
   try {
     const tutorial = await Tutorial.findById(req.params.id)
     if (!tutorial) {
-      return next(new CustomError('Tutorial not found', 400))
+      return next(new CustomError('Tutorial not found', 404))
     }
 
     if (tutorial.creator != req.uid) {
-      return next(
-        new CustomError('Unauthorized access to delete route', 400)
-      )
+      return next(new CustomError('Unauthorized access to delete route', 400))
     }
 
     await Tutorial.findByIdAndDelete(req.params.id)
@@ -93,7 +89,7 @@ exports.delete = async (req, res, next) => {
       await user.updateOne({ tutorials })
     }
 
-    return res.send({ success: true, tutorial: tut })
+    return res.send({ success: true, tutorial })
   } catch (err) {
     next(new CustomError('Something went wrong', 500))
   }

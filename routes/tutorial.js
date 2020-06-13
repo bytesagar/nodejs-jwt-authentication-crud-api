@@ -6,33 +6,30 @@ const { check } = require('express-validator')
 
 const router = express.Router()
 
-
 router.get('/', tutorialController.findAll)
 
-
 router.post(
-    '/new',
-    auth,
-    [
-        check('title', 'Please fill out the field').notEmpty(),
-        check('body', 'Please fill out the field').notEmpty()
-    ],
+  '/new',
+  auth,
+  [
+    check('title', 'Please fill out the field').trim().notEmpty(),
+    check('body', 'Please fill out the field').trim().notEmpty(),
+  ],
 
-    tutorialController.createTutorial
+  tutorialController.createTutorial
 )
 
 router.get('/:id', tutorialController.findOne)
 
-
 router.post(
-    '/edit/:id',
-    auth,
-    [
-        check('title', 'Please fill out the field').notEmpty(),
-        check('body', 'Please fill out the field').notEmpty()
-    ],
+  '/edit/:id',
+  auth,
+  [
+    check('title', 'Please fill out the field').trim().notEmpty(),
+    check('body', 'Please fill out the field').trim().notEmpty(),
+  ],
 
-    tutorialController.update
+  tutorialController.update
 )
 
 router.post('/delete/:id', auth, tutorialController.delete)

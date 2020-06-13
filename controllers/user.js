@@ -1,10 +1,9 @@
 const User = require('../models/userModel')
-
 const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
+
 const { createToken } = require('../utils/jwt')
 const CustomError = require('../models/CustomError')
-const { json } = require('express')
 
 const signUp = async (req, res, next) => {
   const errors = validationResult(req)
@@ -17,8 +16,22 @@ const signUp = async (req, res, next) => {
 
   const { username, email, password } = req.body
   try {
-    let user = await User.findOne({ email: email })
-    if (user) return next(new CustomError('User already exists', 400))
+    let user = await User.findOne({ email })
+    if (user) {
+      return next(
+        new CustomError('User with provided email already exists', 403)
+      )
+    }
+
+    // Since username should also be unique
+    user = await User.findOne({ username })
+
+    if (user) {
+      return next(
+        new CustomError('User with provided username already exists', 403)
+      )
+    }
+
     user = new User({
       username,
       email,
@@ -29,7 +42,6 @@ const signUp = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, salt)
 
     user.password = hashedPassword
-
 
     await user.save()
 
@@ -60,7 +72,7 @@ const login = async (req, res, next) => {
     }
 
     const accessToken = createToken({
-      id: user._id
+      id: user._id,
     })
     user.isLoggedIn = true
     await user.save()

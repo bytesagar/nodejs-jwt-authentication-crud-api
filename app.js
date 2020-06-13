@@ -18,6 +18,17 @@ app.get('/', (req, res) => {
 app.use('/user', user)
 app.use('/tutorial', tutorial)
 
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    errors: [
+      {
+        msg: 'Route not found',
+      },
+    ],
+  })
+})
+
 app.use(errorMiddleware)
 
 const PORT = process.env.PORT || 3000
