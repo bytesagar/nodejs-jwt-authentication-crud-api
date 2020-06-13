@@ -21,13 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  isLoggedIn: {
-    type: Boolean,
-    default: false,
-  },
-  token: {
-    type: String,
-  },
+
   tutorials: [
     {
       type: mongoose.Schema.Types.ObjectId,
